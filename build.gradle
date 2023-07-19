@@ -1,0 +1,65 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+//	id 'java'
+	id 'org.springframework.boot' version '3.1.1'
+	id 'io.spring.dependency-management' version '1.1.0'
+	id 'maven-publish'
+}
+group = 'com.owl.night'
+version = '1.0-SNAPSHOT'
+
+// 设置属性，建议通过这种方式设置版本，这样使用这个BOM的工程可以通过修改properties来轻松的改变版本
+ext {
+	set('springCloudVersion', "2022.0.3")
+	set('junitBomVersion', "5.9.1")
+	set('guavaVersion', "32.1.1-jre")
+}
+// io.spring.dependency-management插件提供的DSL来管理依赖
+dependencyManagement {
+	// 管理的依赖
+	dependencies {
+		// 指定guava的
+		dependency "com.google.guava:guava:${guavaVersion}"
+	}
+	// 导入 既存的BOM，一个是springCloud的另一个是junit的
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+		mavenBom(SpringBootPlugin.BOM_COORDINATES)
+		mavenBom "org.junit:junit-bom:${junitBomVersion}"
+	}
+}
+publishing {
+	repositories {
+		maven {
+			def userName = System.getProperty("un")
+			def passWord = System.getProperty("ps")
+			def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+			def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+			url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+			credentials {
+				username userName
+				password passWord
+			}
+		}
+	}
+	publications {
+		mavenJava(MavenPublication) {
+			mavenJava(MavenPublication) {
+				// 定义POM文件的一些必备信息，这样就可以使用 generatePomFileForMavenJavaPublication task 任务进行pom文件生成，然后你就可以在 目录build/publications/mavenJava/下看到pom-default文件
+				pom {
+					name = "oh-my-bom"
+					description = "oh-my-bom"
+					developers {
+						developer {
+							id = 'light'
+							name = 'xtreme light'
+							email = 'xtremelight17@gmail.com'
+						}
+					}
+				}
+			}
+		}
+	}
+}
