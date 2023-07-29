@@ -1,65 +1,90 @@
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
-//	id 'java'
-	id 'org.springframework.boot' version '3.1.1'
-	id 'io.spring.dependency-management' version '1.1.0'
-	id 'maven-publish'
+    id 'org.springframework.boot' version '3.1.2'
+    id 'io.spring.dependency-management' version '1.1.2'
+    id 'maven-publish'
 }
 group = 'com.owl.night'
 version = '1.0-SNAPSHOT'
 
 // 设置属性，建议通过这种方式设置版本，这样使用这个BOM的工程可以通过修改properties来轻松的改变版本
 ext {
-	set('springCloudVersion', "2022.0.3")
-	set('junitBomVersion', "5.9.1")
-	set('guavaVersion', "32.1.1-jre")
+    configuration = [
+            javaVersion = JavaVersion.VERSION_17
+    ]
+    versions = [
+            'springCloudVersion'       : "2022.0.3",
+            'junitBomVersion'          : "5.9.1",
+            'guavaVersion'             : "32.1.1-jre",
+            'colaVersion'              : "4.3.2",
+            'springCloudAlibabaVersion': "2022.0.0.0-RC2",
+            'mapStructVersion'         : '1.5.5.Final',
+            'prometheus'               : '1.11.2',
+    ]
+    libs = [
+            "springCloudBOM"       : "org.springframework.cloud:spring-cloud-dependencies:${versions.springCloudVersion}",
+            "springBootBOM"        : SpringBootPlugin.BOM_COORDINATES,
+            "junitBOM"             : "org.junit:junit-bom:${versions.junitBomVersion}",
+            "colaBOM"              : "com.alibaba.cola:cola-components-bom:${versions.colaVersion}",
+            "prometheusBOM"        : "io.micrometer:micrometer-bom:${versions.prometheus}",
+            "springCloudAlibabaBOM": "com.alibaba.cloud:spring-cloud-alibaba-dependencies:${versions.springCloudAlibabaVersion}",
+            "guava"                : "com.google.guava:guava:${versions.guavaVersion}",
+    ]
 }
 // io.spring.dependency-management插件提供的DSL来管理依赖
 dependencyManagement {
-	// 管理的依赖
-	dependencies {
-		// 指定guava的
-		dependency "com.google.guava:guava:${guavaVersion}"
-	}
-	// 导入 既存的BOM，一个是springCloud的另一个是junit的
-	imports {
-		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-		mavenBom(SpringBootPlugin.BOM_COORDINATES)
-		mavenBom "org.junit:junit-bom:${junitBomVersion}"
-	}
+    dependencies {
+        dependency("${libs.guava}")
+        dependencySet(group: "org.mapstruct", version: "${versions.mapStructVersion}") {
+            entry 'mapstruct'
+            entry 'mapstruct-processor'
+        }
+    }
+    imports {
+        mavenBom "${libs.springCloudBOM}"
+        mavenBom "${libs.springCloudAlibabaBOM}"
+        mavenBom "${libs.springBootBOM}"
+        mavenBom "${libs.junitBOM}"
+        mavenBom "${libs.colaBOM}"
+        mavenBom "${libs.prometheusBOM}"
+    }
+    // 取消引入BOM的缓存，每次都重新引入
+    resolutionStrategy {
+        cacheChangingModulesFor 0, 'seconds'
+    }
 }
 publishing {
-	repositories {
-		maven {
-			def userName = System.getProperty("un")
-			def passWord = System.getProperty("ps")
-			def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-			def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-			url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+    repositories {
+        maven {
+            def userName = System.getProperty("un")
+            def passWord = System.getProperty("ps")
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
 
-			credentials {
-				username userName
-				password passWord
-			}
-		}
-	}
-	publications {
-		mavenJava(MavenPublication) {
-			mavenJava(MavenPublication) {
-				// 定义POM文件的一些必备信息，这样就可以使用 generatePomFileForMavenJavaPublication task 任务进行pom文件生成，然后你就可以在 目录build/publications/mavenJava/下看到pom-default文件
-				pom {
-					name = "oh-my-bom"
-					description = "oh-my-bom"
-					developers {
-						developer {
-							id = 'light'
-							name = 'xtreme light'
-							email = 'xtremelight17@gmail.com'
-						}
-					}
-				}
-			}
-		}
-	}
+            credentials {
+                username userName
+                password passWord
+            }
+        }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            mavenJava(MavenPublication) {
+                // 定义POM文件的一些必备信息，这样就可以使用 generatePomFileForMavenJavaPublication task 任务进行pom文件生成，然后你就可以在 目录build/publications/mavenJava/下看到pom-default文件
+                pom {
+                    name = "oh-my-bom"
+                    description = "oh-my-bom"
+                    developers {
+                        developer {
+                            id = 'light'
+                            name = 'xtreme light'
+                            email = 'xtremelight17@gmail.com'
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
