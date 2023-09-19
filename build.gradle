@@ -2,7 +2,7 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
     id 'org.springframework.boot' version '3.1.2'
-    id 'io.spring.dependency-management' version '1.1.2'
+    id 'io.spring.dependency-management' version '1.1.3'
     id 'maven-publish'
 }
 group = 'com.owl.night'
@@ -21,6 +21,7 @@ ext {
             'springCloudAlibabaVersion': "2022.0.0.0-RC2",
             'mapStructVersion'         : '1.5.5.Final',
             'prometheus'               : '1.11.2',
+            'mybatisPlusBOMVersion'    : '3.5.3.2',
     ]
     libs = [
             "springCloudBOM"       : "org.springframework.cloud:spring-cloud-dependencies:${versions.springCloudVersion}",
@@ -29,6 +30,7 @@ ext {
             "colaBOM"              : "com.alibaba.cola:cola-components-bom:${versions.colaVersion}",
             "prometheusBOM"        : "io.micrometer:micrometer-bom:${versions.prometheus}",
             "springCloudAlibabaBOM": "com.alibaba.cloud:spring-cloud-alibaba-dependencies:${versions.springCloudAlibabaVersion}",
+            "mybatisPlusBOM"       : "com.baomidou:mybatis-plus-bom:${versions.mybatisPlusBOMVersion}",
             "guava"                : "com.google.guava:guava:${versions.guavaVersion}",
     ]
 }
@@ -48,6 +50,7 @@ dependencyManagement {
         mavenBom "${libs.junitBOM}"
         mavenBom "${libs.colaBOM}"
         mavenBom "${libs.prometheusBOM}"
+        mavenBom "${libs.mybatisPlusBOM}"
     }
     // 取消引入BOM的缓存，每次都重新引入
     resolutionStrategy {
@@ -87,4 +90,13 @@ publishing {
             }
         }
     }
+}
+
+repositories {
+    maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
+    maven { url 'https://maven.aliyun.com/repository/google' }
+    maven { url 'https://maven.aliyun.com/repository/spring' }
+    maven { url 'https://maven.aliyun.com/repository/grails-core' }
+    maven { url 'https://maven.aliyun.com/repository/apache-snapshots' }
+    mavenLocal()
 }
